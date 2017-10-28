@@ -26,7 +26,7 @@ let rec print_clos id c =
 
 let print_value = function
   | Int n -> printf "%d\n" n
-  | Unit -> printf "()\n"
+  | Unit -> ()
   | Closure(id, c, _) -> print_clos id c ; print_newline()
 
 type heap = { mutable address : int ; mutable mem : (int, value) Hashtbl.t} 
