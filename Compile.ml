@@ -15,3 +15,31 @@ let rec compile_expr = function
     (compile_expr e2)
     @ (compile_expr e1)
     @ [Add]
+  | Ast.Binop(Ast.Sub, e1, e2) ->
+      (compile_expr e2) @ 
+      (compile_expr e1)
+      @ [Sub]
+  | Ast.Binop(Ast.Mult, e1, e2) ->
+    (compile_expr e2)
+    @ (compile_expr e1)
+    @ [Mult]
+
+  | Ast.Letin(id, e1, e2) ->
+    (compile_expr e1)
+    @ [Let(id)]
+    @ (compile_expr e2)
+    (*@ [EndLet(id)]*)
+
+  | Ast.Apply(e1, e2) ->
+    (compile_expr e1)
+    @ (compile_expr e2)
+    @ [Apply]
+
+  | Ast.Fun(id, e) ->
+    let func = compile_expr e in
+    [MkClos(id, func @ [Return])]
+
+  | Ast.Seq(e1, e2) ->
+    (compile_expr e1)
+    @ (compile_expr e2)
+  | _ -> failwith "Not implemented"
