@@ -23,5 +23,9 @@ let rec string_of_is = function
   | Alloc -> "Alloc" 
   | Load -> "Load"
   | Store -> "Store"
+  | Dup -> "Dup"
+  | Spawn -> "Spawn"
+  | Drop -> "Drop"
+  | Unit -> "()"
 
 

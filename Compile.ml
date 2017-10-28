@@ -37,7 +37,7 @@ let rec compile_expr = function
 
   | Ast.Fun(id, e) ->
     let func = compile_expr e in
-    [MkClos(id, func @ [Return])]
+    [MkClos(id, func)]
 
   | Ast.Seq(e1, e2) ->
     (compile_expr e1) @
@@ -47,6 +47,9 @@ let rec compile_expr = function
       (compile_expr e2) @
       [Store] @
       [Unit]
+  | Ast.GetR(e) ->
+      (compile_expr e) @
+      [Load]
   | Ast.Spawn(e1, e2) ->
       (compile_expr e1) @
       (compile_expr e2) @

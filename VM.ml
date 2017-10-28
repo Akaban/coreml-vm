@@ -9,7 +9,25 @@ and value =
   | Int of int
   | Unit
   | Closure of string * IS.block * env
- 
+
+let rec print_clos id c = 
+  printf "(fun %s -> " id;
+  List.iter (fun inst ->
+    match inst with
+    | IS.Int(i) -> print_int i
+    | IS.Lookup(id) -> printf " %s " id
+    | IS.Add -> printf " + "
+    | IS.Sub -> printf " - "
+    | IS.Mult -> printf " * "
+    | IS.Let (id) -> printf " %s " id
+    | IS.MkClos(id, c) -> print_clos id c; printf ")"; 
+    | _ -> ()
+  ) c ; printf ")"
+
+let print_value = function
+  | Int n -> printf "%d\n" n
+  | Unit -> printf "()\n"
+  | Closure(id, c, _) -> print_clos id c ; print_newline()
 
 type heap = { mutable address : int ; mutable mem : (int, value) Hashtbl.t} 
 
@@ -56,27 +74,26 @@ let step state threads =
       push (Int n)
 	
     | IS.Lookup(id) ->
-      printf "lookup for %s\n" id ;
-      let v =
-	Env.find id state.env
-      in
+      let v = Env.find id state.env in
       push v
       
     | IS.Add ->
-      let Int n1, Int n2 = pop(), pop() in
+      let Int n1 = pop() in
+      let Int n2 = pop() in
       push(Int(n1+n2))
 
     | IS.Sub ->
-      let Int n1, Int n2 = pop(), pop() in
+      let Int n1 = pop() in
+      let Int n2 = pop() in
       push(Int(n1-n2))
 
     | IS.Mult ->
-      let Int n1,Int n2 = pop(), pop() in
-      push(Int(n1*n2))
+      let Int n1 = pop() in
+      let Int n2 = pop() in
+      push(Int(n1*n2)) 
 
     | IS.Let(id) ->
       let v = pop() in
-      printf "add value %s to env\n" id ;
       state.env <- Env.add id v state.env;
 
     | IS.EndLet(id) ->
@@ -91,12 +108,13 @@ let step state threads =
       let Closure(id, e, env') = pop() in
       let new_cl = Closure("apply_closure", state.code, state.env) in
       push new_cl ;
-      state.code <- e ;
+      state.code <- e @ [IS.Return] ;
       state.env <- Env.add id v env'
 
     | IS.Return ->
       let v = pop() in
-      let Closure(id, e, env') = pop() in
+      let c = pop() in
+      let Closure(id, e, env') = c in
       push(v);
       state.env <- env';
       state.code <- e
@@ -118,44 +136,17 @@ let step state threads =
         push(v) ; push(v)
     | IS.Drop -> let _ = pop() in ()
     | IS.Spawn ->
-        let v, Closure(id, e, env') = pop(), pop() in
+        let v = pop() in 
+        let Closure(id, e, env') = pop() in
         let new_thread = {code = e; stack=[]; env=(Env.add id v env'); heap=state.heap} in
         Queue.add new_thread threads
 
-
-(*
-let execute p : unit =
-  let _ = (IS.print_prg p ; print_newline()) in 
-  let b = {code=p; stack=[]; env=Env.empty;} in
-  let rec exec state =
-    step state; exec state
-  in
-  try
-    exec b
-  with End_of_thread(state) ->
-    match state.stack with
-    | Int(n)::s -> printf "%d\n" n
-    | Closure(id, c, _)::s -> printf "closure\n"
-*)
-
-let rec print_clos id c = 
-  printf "(fun %s -> " id;
-  List.iter (fun inst ->
-    match inst with
-    | IS.Int(i) -> print_int i
-    | IS.Lookup(id) -> printf " %s " id
-    | IS.Add -> printf " + "
-    | IS.Sub -> printf " - "
-    | IS.Mult -> printf " * "
-    | IS.Let (id) -> printf " %s " id
-    | IS.MkClos(id, c) -> print_clos id c; printf ")"; 
-    | _ -> ()
-  ) c ; printf ")"
+let print_stack = List.iter (print_value)
 
 let execute p : unit =
   let print_from_stack = function
-    | Int(n)::_ -> printf "%d\n" n
-    | Closure(id, c, _)::_ -> print_clos id c ; print_newline() in
+    | p::_ -> print_value p
+    | [] -> () in
   let new_heap () = {address=0; mem=Hashtbl.create heap_size} in
   let _ = (print_string "Compiled prog = " ; Compile.print_prg p ; print_newline()) in
   let threads = Queue.create () in
