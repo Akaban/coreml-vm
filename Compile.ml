@@ -58,7 +58,14 @@ let rec compile_expr = function
       Alloc ::
       Dup ::
       (compile_expr r @ [Store])
-  | _ -> assert false 
+  (*| Ast.While(id, e) ->
+      let b = compile_expr e in
+      [While(id,e)]*)
+  | Ast.Cond(c, e1, e2) ->
+      let ce1, ce2 = compile_expr e1, compile_expr e2 in
+      (compile_expr c) @
+      [If(ce1, ce2)]
+  | _ -> failwith "Not implemented"
 
 let print_prg = 
   List.iter (fun i -> 

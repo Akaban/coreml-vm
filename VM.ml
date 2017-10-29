@@ -9,25 +9,31 @@ and value =
   | Int of int
   | Unit
   | Closure of string * IS.block * env
+  | Ptr of int
 
-let rec print_clos id c = 
-  printf "(fun %s -> " id;
-  List.iter (fun inst ->
-    match inst with
-    | IS.Int(i) -> print_int i
-    | IS.Lookup(id) -> printf " %s " id
-    | IS.Add -> printf " + "
-    | IS.Sub -> printf " - "
-    | IS.Mult -> printf " * "
-    | IS.Let (id) -> printf " %s " id
-    | IS.MkClos(id, c) -> print_clos id c; printf ")"; 
-    | _ -> ()
-  ) c ; printf ")"
+let rec print_closure =
+  function 
+    | Closure(id, c, env) ->
+    begin
+    let iter_fun = function
+      | IS.Int(n) -> printf "%d" n
+      | IS.Lookup(id) -> printf " %s " id
+      | IS.Add -> printf " + "
+      | IS.Sub -> printf " - "
+      | IS.Mult -> printf " * "
+      | IS.MkClos(id, c) -> print_closure (Closure(id, c, env)) ; printf ")"; 
+      | IS.Let (id) -> printf " %s " id
+      | _ -> assert false in 
+      printf "(\\%s -> " id;
+      List.iter (iter_fun) c ; printf ")" 
+      end
+    | _ -> () (*not a closure so silently fails*)
 
 let print_value = function
   | Int n -> printf "%d\n" n
   | Unit -> ()
-  | Closure(id, c, _) -> print_clos id c ; print_newline()
+  | Ptr add -> printf "Ptr(%d)" add
+  | Closure(_, _, _) as c -> print_closure c ; print_newline()
 
 type heap = { mutable address : int ; mutable mem : (int, value) Hashtbl.t} 
 
@@ -102,6 +108,16 @@ let step state threads =
     | IS.MkClos(id, e) ->
         let cl = Closure(id, e, state.env) in
         push(cl)
+    | IS.If(e1, e2) ->
+        printf "begin if\n" ;
+        let Int v = pop() in
+        if v==1 then
+          state.code <- e1 @ state.code
+        else 
+          state.code <- e2 @ state.code
+
+    (*| IS.While(id, b) ->
+        let while_cl = Closure("while", state.code, state.env) in*)
 
     | IS.Apply ->
       let v = pop() in
@@ -120,14 +136,15 @@ let step state threads =
       state.code <- e
     | IS.Alloc -> 
         let heap_ptr = state.heap.address in
-        push(Int(heap_ptr)) ;
+        push(Ptr(heap_ptr)) ;
         state.heap.address <- heap_ptr + 1 ;
-        Hashtbl.add state.heap.mem heap_ptr (Int 0)
+        Hashtbl.add state.heap.mem heap_ptr (Int 0) (*value initialized at 0 (standard behavior)*)
     | IS.Store ->
-        let v, Int(ptr) = pop(), pop() in
+        let v = pop() in
+        let Ptr ptr = pop() in
         Hashtbl.replace state.heap.mem ptr v
     | IS.Load ->
-        let Int(ptr) = pop() in
+        let Ptr(ptr) = pop() in
         let v = Hashtbl.find state.heap.mem ptr in
         push(v)
     | IS.Unit -> push Unit

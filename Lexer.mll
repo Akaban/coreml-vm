@@ -24,16 +24,23 @@
 
 let digit = ['0'-'9']
 let alpha = ['a'-'z']
-  
+let alphanumeric = ['0'-'9' 'a'-'z' 'A'-'Z' '_']
+
 rule token = parse
   | ['\n' ' ' '\t' '\r']+  { token lexbuf      }
   | digit+ { INT(int_of_string(lexeme lexbuf)) }
   | alpha+ { id_or_keyword(lexeme lexbuf)      }
+  | alphanumeric+ { IDENT(lexeme lexbuf) }
   | "+"  { PLUS  }
   | "-"  { MINUS }
   | "*"  { STAR  }
   | "("  { LP    }
   | ")"  { RP    }
+  | "==" { EQUAL }
+  | ">=" { GEQ }
+  | "<=" { LEQ }
+  | ">" { GT }
+  | "<" { LT }
   | "="  { EQ    }
   | "->" { ARROW }
   | ";"  { SEMI  }

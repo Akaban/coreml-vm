@@ -5,6 +5,7 @@
 %token <int> INT
 %token <string> IDENT
 %token PLUS MINUS STAR
+%token EQUAL GEQ LEQ LT GT
 %token LP RP
 %token LET EQ IN
 %token FUN ARROW
