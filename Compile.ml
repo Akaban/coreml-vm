@@ -7,22 +7,19 @@ let rec compile_expr = function
   | Ast.Ident(id) ->
     [Lookup(id)]
 
-  | Ast.Binop(Ast.Add, e1, e2) ->
-    (* D'abord un opérande, puis
-       l'autre, puis l'opérateur,
-       comme en notation
-       polonaise inversée. *)
-    (compile_expr e2) @
-    (compile_expr e1) @
-    [Add]
-  | Ast.Binop(Ast.Sub, e1, e2) ->
+  | Ast.Binop(op, e1, e2) ->
+      let compile_op = begin match op with
+        | Ast.Add -> [Add]
+        | Ast.Sub -> [Sub]
+        | Ast.Mult -> [Mult]
+        | Ast.Eq -> [Eq]
+        | Ast.Geq -> [Geq]
+        | Ast.Leq -> [Leq]
+        | Ast.Gt -> [Gt]
+        | Ast.Lt -> [Lt] end in
       (compile_expr e2) @
       (compile_expr e1) @
-      [Sub]
-  | Ast.Binop(Ast.Mult, e1, e2) ->
-    (compile_expr e2) @
-    (compile_expr e1) @
-    [Mult]
+      compile_op
 
   | Ast.Letin(id, e1, e2) ->
     (compile_expr e1) @
@@ -58,16 +55,17 @@ let rec compile_expr = function
       Alloc ::
       Dup ::
       (compile_expr r @ [Store])
-  (*| Ast.While(id, e) ->
+  | Ast.Loop(c, e) ->
       let b = compile_expr e in
-      [While(id,e)]*)
+      let c' = compile_expr c in
+      c' @ 
+      [While(c',b)]
   | Ast.Cond(c, e1, e2) ->
       let ce1, ce2 = compile_expr e1, compile_expr e2 in
       (compile_expr c) @
       [If(ce1, ce2)]
-  | _ -> failwith "Not implemented"
 
 let print_prg = 
   List.iter (fun i -> 
-    Printf.printf "%s, " (string_of_is i))
+    Printf.printf "%s " (string_of_is i))
 

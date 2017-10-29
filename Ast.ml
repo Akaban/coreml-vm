@@ -13,4 +13,4 @@ type expr =
   | SetR  of expr * expr
   | Spawn of expr * expr
 and ident = string
-and binop = Add | Sub | Mult
+and binop = Add | Sub | Mult | Eq | Geq | Leq | Gt | Lt

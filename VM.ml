@@ -57,6 +57,9 @@ exception End_of_thread of thread_state
     
 
 let step state threads =
+  let int_of_bool = function
+    | true -> 1
+    | false -> 0 in
   let fetch() =
     match state.code with
       | []   ->
@@ -96,7 +99,34 @@ let step state threads =
     | IS.Mult ->
       let Int n1 = pop() in
       let Int n2 = pop() in
-      push(Int(n1*n2)) 
+      push(Int(n1*n2))
+
+    | IS.Geq ->
+        let Int n1 = pop() in
+        let Int n2 = pop() in
+        let v = n1 >= n2 in
+        push(Int(int_of_bool(v)))
+
+    | IS.Leq ->
+        let Int n1 = pop() in
+        let Int n2 = pop() in
+        let v = n1 <= n2 in
+        push(Int(int_of_bool(v)))
+    | IS.Eq ->
+        let Int n1 = pop() in
+        let Int n2 = pop() in
+        let v = n1 == n2 in
+        push(Int(int_of_bool(v)))
+    | IS.Lt ->
+        let Int n1 = pop() in
+        let Int n2 = pop() in
+        let v = n1 < n2 in
+        push(Int(int_of_bool(v)))
+    | IS.Gt ->
+        let Int n1 = pop() in
+        let Int n2 = pop() in
+        let v = n1 > n2 in
+        push(Int(int_of_bool(v)))
 
     | IS.Let(id) ->
       let v = pop() in
@@ -109,15 +139,16 @@ let step state threads =
         let cl = Closure(id, e, state.env) in
         push(cl)
     | IS.If(e1, e2) ->
-        printf "begin if\n" ;
         let Int v = pop() in
         if v==1 then
           state.code <- e1 @ state.code
         else 
           state.code <- e2 @ state.code
 
-    (*| IS.While(id, b) ->
-        let while_cl = Closure("while", state.code, state.env) in*)
+    | IS.While(c, e2) as while_ ->
+        let Int v = pop() in
+        if v==1 then
+          state.code <- e2 @ c @ [while_] @ state.code
 
     | IS.Apply ->
       let v = pop() in

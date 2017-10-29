@@ -21,6 +21,7 @@
 %left SEMI
 %nonassoc ELSE
 %nonassoc SET
+%left EQUAL GEQ LEQ LT GT
 %left PLUS MINUS
 %left STAR
 %nonassoc LP INT IDENT
@@ -60,4 +61,9 @@ simple_expr:
 | PLUS  { Add  }
 | MINUS { Sub  }
 | STAR  { Mult }
+| EQUAL { Eq }
+| GEQ { Geq }
+| LEQ { Leq }
+| LT { Lt }
+| GT { Gt }
 ;
