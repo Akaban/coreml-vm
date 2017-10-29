@@ -124,7 +124,8 @@ let step state threads =
         state.heap.address <- heap_ptr + 1 ;
         Hashtbl.add state.heap.mem heap_ptr (Int 0)
     | IS.Store ->
-        let v, Int(ptr) = pop(), pop() in
+        let v = pop() in
+        let Int ptr = pop() in
         Hashtbl.replace state.heap.mem ptr v
     | IS.Load ->
         let Int(ptr) = pop() in
