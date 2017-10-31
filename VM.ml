@@ -192,14 +192,10 @@ let step state threads =
         let v = Hashtbl.find state.heap.mem ptr in
         push(v)
     | IS.Unit ->
-        begin
-        try
-          let vs=pop() in
-          if vs==Unit then push(Unit)
-          else (push(vs) ; push(Unit))
-        with
-          | EmptyStack -> push(Unit)
-        end
+        begin match state.stack with
+               | Unit :: s -> ()
+               | _ -> push Unit
+               end
     | IS.Dup ->
         let v = pop() in
         push(v) ; push(v)
