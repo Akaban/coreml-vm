@@ -3,6 +3,8 @@ module IS = InstructionSet
 
 let heap_size = 20
 
+exception VMError of string
+
 module Env = Map.Make(String)
 type env = value Env.t
 and value =
@@ -11,27 +13,43 @@ and value =
   | Closure of string * IS.block * env
   | Ptr of int
 
+let rec closure_of_string =
+  function 
+    | Closure(id, c, env) ->
+    begin
+    let iter_fun = function
+      | IS.MkClos(id, c) -> closure_of_string (Closure(id, c, env)) 
+      | ins -> IS.string_of_is ins in
+    (sprintf "(\\%s -> " id) ^
+    (List.fold_right (fun x acc -> iter_fun x ^ acc) c "") ^ ")" 
+      end
+    | _ -> ""
+
+
+
 let rec print_closure =
   function 
     | Closure(id, c, env) ->
     begin
     let iter_fun = function
-      | IS.Int(n) -> printf "%d" n
-      | IS.Lookup(id) -> printf " %s " id
-      | IS.Add -> printf " + "
-      | IS.Sub -> printf " - "
-      | IS.Mult -> printf " * "
       | IS.MkClos(id, c) -> print_closure (Closure(id, c, env)) 
-      | IS.Let (id) -> printf " %s " id
-      | _ -> assert false in 
+      | ins -> printf "%s\n" (IS.string_of_is ins) in
       printf "(\\%s -> " id;
       List.iter (iter_fun) c ; printf ")" 
       end
     | _ -> () (*not a closure so silently fails*)
 
+let string_of_value = function
+  | Int n -> sprintf "%d" n
+  | Unit -> "Unit"
+  | Ptr add -> sprintf "Ptr(%d)" add
+  | Closure(_, _, _) as c -> sprintf "closure " ^ (closure_of_string c) 
+
+
+
 let print_value = function
   | Int n -> printf "%d\n" n
-  | Unit -> ()
+  | Unit -> printf "Unit"
   | Ptr add -> printf "Ptr(%d)" add
   | Closure(_, _, _) as c -> print_closure c ; print_newline()
 
@@ -161,6 +179,10 @@ let step state threads =
     | IS.Return ->
       let v = pop() in
       let c = pop() in
+      let cref = ref c in
+      while !cref == Unit do (*maybe some units are accumulated in the stack*)
+        cref := pop() done ; (*we ignore them*)
+      let c = !cref in 
       let Closure(id, e, env') = c in
       push(v);
       state.env <- env';
@@ -175,7 +197,9 @@ let step state threads =
         let Ptr ptr = pop() in
         Hashtbl.replace state.heap.mem ptr v
     | IS.Load ->
-        let Ptr(ptr) = pop() in
+        let ptr = match pop() with
+          | Ptr(x) -> x
+          | x -> raise (VMError (sprintf "TypeError: %s is not a pointer)" (string_of_value x))) in
         let v = Hashtbl.find state.heap.mem ptr in
         push(v)
     | IS.Unit -> push Unit
@@ -206,7 +230,14 @@ let execute p : unit =
     try
       begin
       while true do
-        step worker threads ; done end
+        (*let nowreading = match worker.code with
+          | x::xs -> IS.string_of_is x
+          | [] -> "End of thread" in
+        printf "Now reading: %s\n\n" (nowreading) ; *)
+        step worker threads ; 
+        (*printf "-------BEGIN STACK-----------\n" ;
+        print_stack worker.stack ; 
+        printf "\n--------END STACK----------\n\n" ;*) done end
     with End_of_thread(state) ->
       let _ = Queue.take threads in (*remove thread*)
       print_from_stack state.stack
