@@ -105,9 +105,15 @@ let step state threads =
       push v
       
     | IS.Add ->
-      let Int n1 = pop() in
-      let Int n2 = pop() in
-      push(Int(n1+n2))
+      let v1 = pop() in
+      let v2 = pop() in
+      begin
+      match v1,v2 with
+        | Int(n1), Int(n2) -> push(Int(n1+n2))
+        | Ptr(n1), Ptr(n2) -> raise (VMError "TypeError: Additions between pointers are not allowed")
+        | Int(n1), Ptr(n2)
+        | Ptr(n1), Int(n2) -> printf "Warning: Pointer addition with integer\n" ; push(Ptr(n1+n2))
+        end
 
     | IS.Sub ->
       let Int n1 = pop() in

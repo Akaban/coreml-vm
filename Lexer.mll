@@ -52,5 +52,5 @@ rule token = parse
 
 and comment = parse
   | "*)" { () }
-  | eof  { failwith "Open comment" }
+  | eof  { failwith "Comment not closed" }
   | _    { comment lexbuf }
