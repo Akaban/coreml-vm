@@ -18,5 +18,9 @@ let () =
   close_in c;
   let p  = Compile.compile_expr e in
   (* InstructionSet.print_prog p; *)
-  VM.execute p;
+  begin
+  try
+    VM.execute p
+  with
+    | Match_failure (_,_,_) -> raise (VM.VMError "SemanticError: The Virtual Machine encoutered a MatchError because of a semantic error") end ;
   exit 0

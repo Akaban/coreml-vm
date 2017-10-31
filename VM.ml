@@ -4,6 +4,7 @@ module IS = InstructionSet
 let heap_size = 20
 
 exception VMError of string
+exception EmptyStack
 
 module Env = Map.Make(String)
 type env = value Env.t
@@ -27,17 +28,7 @@ let rec closure_of_string =
 
 
 
-let rec print_closure =
-  function 
-    | Closure(id, c, env) ->
-    begin
-    let iter_fun = function
-      | IS.MkClos(id, c) -> print_closure (Closure(id, c, env)) 
-      | ins -> printf "%s\n" (IS.string_of_is ins) in
-      printf "(\\%s -> " id;
-      List.iter (iter_fun) c ; printf ")" 
-      end
-    | _ -> () (*not a closure so silently fails*)
+let print_closure c = printf "%s\n" (closure_of_string c)
 
 let string_of_value = function
   | Int n -> sprintf "%d" n
@@ -47,11 +38,7 @@ let string_of_value = function
 
 
 
-let print_value = function
-  | Int n -> printf "%d\n" n
-  | Unit -> printf "Unit"
-  | Ptr add -> printf "Ptr(%d)" add
-  | Closure(_, _, _) as c -> print_closure c ; print_newline()
+let print_value v = printf "%s\n" (string_of_value v)
 
 type heap = { mutable address : int ; mutable mem : (int, value) Hashtbl.t} 
 
@@ -91,7 +78,7 @@ let step state threads =
   in
   let pop() =
     match state.stack with
-      | [] -> assert false
+      | [] -> raise EmptyStack
       | v::s ->
 	state.stack <- s;
 	v
@@ -184,15 +171,11 @@ let step state threads =
 
     | IS.Return ->
       let v = pop() in
-      let c = pop() in
-      let cref = ref c in
-      while !cref == Unit do (*maybe some units are accumulated in the stack*)
-        cref := pop() done ; (*we ignore them*)
-      let c = !cref in 
+      let c = begin match pop() with Unit -> pop() | x -> x end in
       let Closure(id, e, env') = c in
       push(v);
       state.env <- env';
-      state.code <- e
+      state.code <- e ;
     | IS.Alloc -> 
         let heap_ptr = state.heap.address in
         push(Ptr(heap_ptr)) ;
@@ -208,7 +191,15 @@ let step state threads =
           | x -> raise (VMError (sprintf "TypeError: %s is not a pointer)" (string_of_value x))) in
         let v = Hashtbl.find state.heap.mem ptr in
         push(v)
-    | IS.Unit -> push Unit
+    | IS.Unit ->
+        begin
+        try
+          let vs=pop() in
+          if vs==Unit then push(Unit)
+          else (push(vs) ; push(Unit))
+        with
+          | EmptyStack -> push(Unit)
+        end
     | IS.Dup ->
         let v = pop() in
         push(v) ; push(v)
@@ -240,8 +231,8 @@ let execute p : unit =
           | x::xs -> IS.string_of_is x
           | [] -> "End of thread" in
         printf "Now reading: %s\n\n" (nowreading) ; *)
-        step worker threads ; 
-        (*printf "-------BEGIN STACK-----------\n" ;
+        step worker threads ;(* 
+        printf "-------BEGIN STACK-----------\n" ;
         print_stack worker.stack ; 
         printf "\n--------END STACK----------\n\n" ;*) done end
     with End_of_thread(state) ->
