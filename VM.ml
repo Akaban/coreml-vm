@@ -21,7 +21,7 @@ let rec print_closure =
       | IS.Add -> printf " + "
       | IS.Sub -> printf " - "
       | IS.Mult -> printf " * "
-      | IS.MkClos(id, c) -> print_closure (Closure(id, c, env)) ; printf ")"; 
+      | IS.MkClos(id, c) -> print_closure (Closure(id, c, env)) 
       | IS.Let (id) -> printf " %s " id
       | _ -> assert false in 
       printf "(\\%s -> " id;
