@@ -51,6 +51,7 @@ let rec compile_expr = function
       (compile_expr e1) @
       (compile_expr e2) @
       [Spawn]
+  | Ast.Wait -> [Wait]
   | Ast.Ref(r) ->
       Alloc ::
       Dup ::

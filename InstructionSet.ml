@@ -1,7 +1,7 @@
 type instruction =
   | Int of int | Lookup of string | Add | Mult| Sub
   | MkClos of string * block | Let of string | EndLet of string | Return | Apply
-  | Alloc | Unit | Drop | Spawn | Load | Store | Dup
+  | Alloc | Unit | Drop | Spawn | Wait | Load | Store | Dup
   | While of block * block | If of block * block | Eq | Geq | Leq | Gt | Lt
 
 
@@ -39,6 +39,7 @@ let rec string_of_is =
     | Dup -> "Dup"
     | Spawn -> "Spawn"
     | Drop -> "Drop"
+    | Wait -> "Wait"
     | Unit -> "()"
 
 

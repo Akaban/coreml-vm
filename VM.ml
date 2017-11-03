@@ -59,7 +59,7 @@ type thread_state = {
 }
 
 exception End_of_thread of thread_state
-    
+exception Wait_of_thread  
 
 let step state threads =
   let int_of_bool = function
@@ -201,6 +201,7 @@ let step state threads =
         let v = pop() in
         push(v) ; push(v)
     | IS.Drop -> let _ = pop() in ()
+    | IS.Wait -> let thread = Queue.take threads in Queue.add thread threads ; raise Wait_of_thread
     | IS.Spawn ->
         let v = pop() in 
         let Closure(id, e, env') = pop() in
@@ -235,4 +236,5 @@ let execute p : unit =
     with End_of_thread(state) ->
       let _ = Queue.take threads in (*remove thread*)
       print_from_stack state.stack
+        | Wait_of_thread -> () 
     end ; done ;;

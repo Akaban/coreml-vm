@@ -12,5 +12,6 @@ type expr =
   | GetR  of expr
   | SetR  of expr * expr
   | Spawn of expr * expr
+  | Wait
 and ident = string
 and binop = Add | Sub | Mult | Eq | Geq | Leq | Gt | Lt

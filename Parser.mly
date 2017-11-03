@@ -13,7 +13,7 @@
 %token WHILE DO DONE
 %token SEMI
 %token REF BANG SET
-%token SPAWN
+%token SPAWN WAIT
 %token EOF
 
 %nonassoc IN
@@ -48,6 +48,7 @@ expr:
 | REF e=simple_expr                    { Ref(e)            }
 | d=expr SET e=expr                    { SetR(d, e)        }
 | SPAWN e1=simple_expr e2=simple_expr  { Spawn(e1, e2)     }
+| WAIT                                 { Wait              }
 ;
 
 simple_expr:

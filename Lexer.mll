@@ -16,6 +16,7 @@
 	"done", DONE;
 	"ref",  REF;
 	"spawn", SPAWN;
+  "wait", WAIT
       ] ;
     fun s ->
       try Hashtbl.find h s
