@@ -141,7 +141,8 @@ let step state threads =
 
     | IS.Let(id) ->
       let v = pop() in
-      state.env <- Env.add id v state.env;
+      state.env <- Env.remove id state.env ; (*allow variable shadowing*)
+      state.env <- Env.add id v state.env
 
     | IS.EndLet(id) ->
       state.env <- Env.remove id state.env
