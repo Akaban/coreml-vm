@@ -190,8 +190,11 @@ let step state threads =
         let ptr = match pop() with
           | Ptr(x) -> x
           | x -> raise (VMError (sprintf "TypeError: %s is not a pointer)" (string_of_value x))) in
-        let v = Hashtbl.find state.heap.mem ptr in
-        push(v)
+	  begin
+        try
+	  let v = Hashtbl.find state.heap.mem ptr in
+          push(v)
+	with Not_found -> (VMError (sprintf "PointerError: No such pointer (%d) in heap" ptr) end
     | IS.Unit ->
         begin match state.stack with
                | Unit :: s -> ()
