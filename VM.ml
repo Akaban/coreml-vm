@@ -107,6 +107,11 @@ let step state threads =
       let Int n2 = pop() in
       push(Int(n1-n2))
 
+    | IS.Div ->
+        let Int n1 = pop() in
+        let Int n2 = pop() in
+        push(Int(n1/n2))
+
     | IS.Mult ->
       let Int n1 = pop() in
       let Int n2 = pop() in
@@ -176,7 +181,12 @@ let step state threads =
       let Closure(id, e, env') = c in
       push(v);
       state.env <- env';
-      state.code <- e ;
+      state.code <- e 
+
+    | IS.Print ->
+        let r, v = match pop() with Ptr(_) | Closure(_,_,_) | Unit -> printf "PrintWarning: Tried to print a non integer, skip instruction...\n" ; 1,0 | Int(x) -> 0,x in
+        if r=0 then
+          printf "%d\n" v
     | IS.Alloc -> 
         let heap_ptr = state.heap.address in
         push(Ptr(heap_ptr)) ;
@@ -192,9 +202,9 @@ let step state threads =
           | x -> raise (VMError (sprintf "TypeError: %s is not a pointer)" (string_of_value x))) in
 	  begin
         try
-	  let v = Hashtbl.find state.heap.mem ptr in
+	      let v = Hashtbl.find state.heap.mem ptr in
           push(v)
-	with Not_found -> (VMError (sprintf "PointerError: No such pointer (%d) in heap" ptr) end
+	      with Not_found -> raise (VMError (sprintf "PointerError: No such pointer (%d) in heap" ptr)) end 
     | IS.Unit ->
         begin match state.stack with
                | Unit :: s -> ()
@@ -213,12 +223,11 @@ let step state threads =
 
 let print_stack = List.iter (print_value)
 
-let execute p : unit =
+let execute p print_stackval : unit =
   let print_from_stack = function
-    | p::_ -> print_value p
+    | p::_ -> printf "StackPrint: " ; print_value p
     | [] -> () in
   let new_heap () = {address=0; mem=Hashtbl.create heap_size} in
-  let _ = (print_string "Compiled prog = " ; Compile.print_prg p ; print_newline()) in
   let threads = Queue.create () in
   let fst_thread = {code=p ; env=Env.empty ; stack=[] ; heap=new_heap()} in
   Queue.add fst_thread threads ;
@@ -228,16 +237,9 @@ let execute p : unit =
     try
       begin
       while true do
-        (*let nowreading = match worker.code with
-          | x::xs -> IS.string_of_is x
-          | [] -> "End of thread" in
-        printf "Now reading: %s\n\n" (nowreading) ; *)
-        step worker threads ;(* 
-        printf "-------BEGIN STACK-----------\n" ;
-        print_stack worker.stack ; 
-        printf "\n--------END STACK----------\n\n" ;*) done end
+        step worker threads done end 
     with End_of_thread(state) ->
       let _ = Queue.take threads in (*remove thread*)
-      print_from_stack state.stack
+      if print_stackval then print_from_stack state.stack
         | Wait_of_thread -> () 
     end ; done ;;

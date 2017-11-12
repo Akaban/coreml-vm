@@ -12,6 +12,7 @@ let rec compile_expr = function
         | Ast.Add -> [Add]
         | Ast.Sub -> [Sub]
         | Ast.Mult -> [Mult]
+        | Ast.Div -> [Div]
         | Ast.Eq -> [Eq]
         | Ast.Geq -> [Geq]
         | Ast.Leq -> [Leq]
@@ -61,6 +62,22 @@ let rec compile_expr = function
       let c' = compile_expr c in
       c' @ 
       [While(c',b)]
+  | Ast.For(id, begfor, endfor, e1) ->
+     let endfor', begfor' = compile_expr endfor, compile_expr begfor in
+     let condWhile = endfor' @ [Lookup(id); Load; Leq] in
+     let e1' = (compile_expr e1) @ [Lookup(id); Lookup(id); Load; Int(1); Add; Store; Unit] in
+     Alloc ::
+     Dup ::
+     (begfor' @ 
+     [ Store ;
+     Let(id) ] @
+     condWhile @
+     [While(condWhile,e1')])
+
+  | Ast.Print(e) ->
+      (compile_expr e) @
+      [Print]
+
   | Ast.Cond(c, e1, e2) ->
       let ce1, ce2 = compile_expr e1, compile_expr e2 in
       (compile_expr c) @

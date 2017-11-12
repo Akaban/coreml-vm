@@ -16,7 +16,10 @@
 	"done", DONE;
 	"ref",  REF;
 	"spawn", SPAWN;
-  "wait", WAIT
+  "wait", WAIT;
+  "for", FOR;
+  "upto", UPTO;
+  "print", PRINT
       ] ;
     fun s ->
       try Hashtbl.find h s
@@ -37,6 +40,7 @@ rule token = parse
   | "*"  { STAR  }
   | "("  { LP    }
   | ")"  { RP    }
+  | "/"  { DIV   }
   | "==" { EQUAL }
   | ">=" { GEQ }
   | "<=" { LEQ }

@@ -1,0 +1,8 @@
+let incr = (fun r -> r <- !r + 1 ; !r) in
+let x = ref 0 in
+
+spawn incr x; spawn incr x; spawn incr x; spawn incr x;
+spawn incr x; spawn incr x; spawn incr x; spawn incr x;
+spawn incr x; spawn incr x; spawn incr x; spawn incr x;
+wait ; (* wait for all threads to finish *)
+!x

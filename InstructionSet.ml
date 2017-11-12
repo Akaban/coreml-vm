@@ -1,8 +1,9 @@
 type instruction =
-  | Int of int | Lookup of string | Add | Mult| Sub
+  | Int of int | Lookup of string | Add | Mult | Div | Sub
   | MkClos of string * block | Let of string | EndLet of string | Return | Apply
   | Alloc | Unit | Drop | Spawn | Wait | Load | Store | Dup
   | While of block * block | If of block * block | Eq | Geq | Leq | Gt | Lt
+  | Print
 
 
 and block = instruction list
@@ -17,12 +18,14 @@ let rec string_of_is =
     | Lookup(id) -> id
     | Add -> "+"
     | Sub -> "-"
+    | Div -> "/"
     | Mult -> "*"
     | Eq -> "=="
     | Geq -> ">="
     | Leq -> "<="
     | Lt  -> "<"
     | Gt -> ">"
+    | Print -> "Print"
     | Let(id) -> Printf.sprintf "Let(%s)" id
     | EndLet(id) -> Printf.sprintf "EndLet(%s)" id
     | MkClos(id, b) ->

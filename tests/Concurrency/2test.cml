@@ -1,0 +1,1 @@
+lt x = ref 0 in let incr = (fun a -> a <- !a + 1 ; !a) in spawn incr x ; spawn incr x ; spawn incr x ; spawn incr x ;spawn incr x ;spawn incr x ;spawn incr x ;spawn incr x 

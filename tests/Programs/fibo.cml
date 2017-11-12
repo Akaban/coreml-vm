@@ -1,0 +1,14 @@
+let fibo_arg=10 in
+let fibo_arg=ref fibo_arg in
+
+let fibo1=ref 1 in
+let fibo2=ref 1 in
+
+while !fibo_arg > 2 do
+  let tmp = !fibo2 in
+  fibo_arg <- !fibo_arg - 1 ;
+  fibo2 <- !fibo1 + !fibo2 ;
+  fibo1 <- tmp done ;
+  print !fibo2
+
+

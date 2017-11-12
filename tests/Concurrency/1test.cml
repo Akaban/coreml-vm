@@ -1,0 +1,1 @@
+spawn (fun a -> a*10) 10

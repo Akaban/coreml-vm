@@ -1,0 +1,1 @@
+let f = (fun a -> if a < 10 then 100 else 200) in f 10
