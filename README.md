@@ -34,7 +34,7 @@ The compiled VM program is,
     10 Let(fibo_arg) Alloc Dup fibo_arg Store Let(fibo_arg) Alloc Dup 1 Store Let(fibo1) Alloc Dup 1 Store Let(fibo2) 2 fibo_arg Load > 
     While {2, fibo_arg, Load, >} do 
       {fibo2, Load, Let(tmp), fibo_arg, 1, fibo_arg, Load, -, Store, (), fibo2, fibo2, Load, fibo1, Load, +, Store, (), fibo1, tmp, Store, ()} 
-    fibo2 Load 
+    fibo2 Load Print
 
 This will return the value 55.
 
