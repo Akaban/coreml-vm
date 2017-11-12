@@ -38,6 +38,7 @@ The compiled VM program is,
 
 This will return the value 55.
 
+Others example of code can be found in the folder `tests`
 
 ## What is implemented?
 
@@ -46,7 +47,7 @@ This will return the value 55.
   * References (pointers) with the keyword `ref` ie. `let a = ref 10`.
     We can then refer to a reference with a bang like this `!a` or set the value of a reference with the following syntax
     `a <- !a + 1`
-  * Conditionals (if) and loops (while, for) 
+  * Conditionals (if) and loops (while, for). For syntax is `for a=1 upto 10 do expr done`
   * Concurrent programming (the implementation is basic though), with the keyword `spawn fun arg`. We can wait all threads to finish with the keyword `wait`
   * Anonymous (lambdas) functions: `let a = (fun b -> b + 1)`
   * Printing integers (with `print`)
