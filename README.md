@@ -38,7 +38,7 @@ The compiled VM program is,
 
 This will return the value 55.
 
-Others example of code can be found in the folder `tests`
+Others example of code can be found in the folder `tests`. We can run some of these tests with the script `runtest.sh`
 
 ## What is implemented?
 
