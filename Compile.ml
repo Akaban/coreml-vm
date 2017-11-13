@@ -1,5 +1,9 @@
 open InstructionSet
 
+(* compile_expr :: Ast.t -> IS list
+ * Compile le programme encodé dans l'arbre AST vers les instructions de la VM
+ * Renvoie le programme ainsi compilé sous forme de liste d'instructions*) 
+
 let rec compile_expr = function
   | Ast.Int(n) ->
     [Int(n)]
@@ -28,7 +32,6 @@ let rec compile_expr = function
     (compile_expr e1) @
     [Let(id)] @
     (compile_expr e2)
-    (*@ [EndLet(id)]*)
 
   | Ast.Apply(e1, e2) ->
     let fun_expr = compile_expr e1 in
@@ -43,6 +46,7 @@ let rec compile_expr = function
 
   | Ast.Seq(e1, e2) ->
     (compile_expr e1) @
+    [Drop] @
     (compile_expr e2)
   | Ast.SetR(e1, e2) ->
       (compile_expr e1) @ 
@@ -69,7 +73,8 @@ let rec compile_expr = function
   | Ast.For(id, begfor, endfor, e1) ->
      let endfor', begfor' = compile_expr endfor, compile_expr begfor in
      let condWhile = endfor' @ [Lookup(id); Load; Leq] in
-     let e1' = (compile_expr e1) @ [Lookup(id); Lookup(id); Load; Int(1); Add; Store; Unit] in
+     let e1' = (compile_expr e1) @ [Lookup(id); Lookup(id); Load; Int(1); Add; Store; Unit] (*variable incrementation code*) in
+     (*syntaxic sugar, we compile this using a while instruction*)
      Alloc ::
      Dup ::
      (begfor' @ 
