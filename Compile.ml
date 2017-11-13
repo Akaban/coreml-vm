@@ -13,6 +13,8 @@ let rec compile_expr = function
         | Ast.Sub -> [Sub]
         | Ast.Mult -> [Mult]
         | Ast.Div -> [Div]
+        | Ast.And -> [And]
+        | Ast.Or -> [Or]
         | Ast.Eq -> [Eq]
         | Ast.Geq -> [Geq]
         | Ast.Leq -> [Leq]

@@ -88,9 +88,13 @@ let step state threads =
       push (Int n)
 	
     | IS.Lookup(id) ->
-      let v = Env.find id state.env in
-      push v
-      
+      begin
+      try
+        let v = Env.find id state.env in
+        push v
+      with
+        Not_found -> raise (VMError (sprintf "VariableError: The variable %s does not exist" id))
+      end
     | IS.Add ->
       let v1 = pop() in
       let v2 = pop() in
@@ -143,6 +147,22 @@ let step state threads =
         let Int n2 = pop() in
         let v = n1 > n2 in
         push(Int(int_of_bool(v)))
+
+    | IS.Or ->
+        let Int n1 = pop() in
+        let Int n2 = pop() in
+        if n1=1 || n2=1 then
+          push(Int(1))
+        else
+          push(Int(0))
+
+    | IS.And ->
+        let Int n1 = pop() in
+        let Int n2 = pop() in
+        if n1=1 && n2=1 then
+          push(Int(1))
+        else
+          push(Int(0))
 
     | IS.Let(id) ->
       let v = pop() in

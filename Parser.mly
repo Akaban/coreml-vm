@@ -6,6 +6,7 @@
 %token <string> IDENT
 %token PLUS MINUS STAR DIV
 %token EQUAL GEQ LEQ LT GT
+%token AND OR
 %token LP RP
 %token LET EQ IN
 %token FUN ARROW
@@ -23,6 +24,8 @@
 %left SEMI
 %nonassoc ELSE
 %nonassoc SET
+%left AND
+%left OR
 %left EQUAL GEQ LEQ LT GT
 %left PLUS MINUS
 %left STAR DIV
@@ -72,4 +75,6 @@ simple_expr:
 | LT { Lt }
 | GT { Gt }
 | DIV { Div}
+| AND { And}
+| OR  { Or}
 ;

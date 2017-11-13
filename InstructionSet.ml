@@ -1,5 +1,5 @@
 type instruction =
-  | Int of int | Lookup of string | Add | Mult | Div | Sub
+  | Int of int | Lookup of string | Add | Mult | Div | Sub | And | Or
   | MkClos of string * block | Let of string | EndLet of string | Return | Apply
   | Alloc | Unit | Drop | Spawn | Wait | Load | Store | Dup
   | While of block * block | If of block * block | Eq | Geq | Leq | Gt | Lt
@@ -21,6 +21,8 @@ let rec string_of_is =
     | Div -> "/"
     | Mult -> "*"
     | Eq -> "=="
+    | And -> "&&"
+    | Or -> "||"
     | Geq -> ">="
     | Leq -> "<="
     | Lt  -> "<"

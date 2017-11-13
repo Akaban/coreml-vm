@@ -16,4 +16,4 @@ type expr =
   | Print of expr
   | Wait
 and ident = string
-and binop = Add | Sub | Mult | Div | Eq | Geq | Leq | Gt | Lt
+and binop = Add | Sub | Mult | Div | Eq | Geq | Leq | Gt | Lt | And | Or

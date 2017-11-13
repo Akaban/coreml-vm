@@ -41,6 +41,8 @@ rule token = parse
   | "("  { LP    }
   | ")"  { RP    }
   | "/"  { DIV   }
+  | "||" { OR    }
+  | "&&" { AND   }
   | "==" { EQUAL }
   | ">=" { GEQ }
   | "<=" { LEQ }

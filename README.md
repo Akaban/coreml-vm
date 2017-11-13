@@ -44,6 +44,7 @@ Others example of code can be found in the folder `tests`
 
   * Integers, Pointers and Functions
   * All basic binary operations (add, sub, mul, integer division, <, >, >=, <=, =)
+  * Booleans as integers (C-like), 1 is true and everything else is considered false. And (&&), Or (||) are also implemented
   * References (pointers) with the keyword `ref` ie. `let a = ref 10`.
     We can then refer to a reference with a bang like this `!a` or set the value of a reference with the following syntax
     `a <- !a + 1`
