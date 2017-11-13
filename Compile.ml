@@ -83,7 +83,11 @@ let rec compile_expr = function
       (compile_expr c) @
       [If(ce1, ce2)]
 
-let print_prg = 
-  List.iter (fun i -> 
-    Printf.printf "%s " (string_of_is i))
+
+let print_prg =
+  let rec printfun = function
+    | [x] -> Printf.printf "%s" (string_of_is x)
+    | x::xs -> Printf.printf "%s, " (string_of_is x) ; printfun xs
+    | [] -> () in
+  printfun
 
