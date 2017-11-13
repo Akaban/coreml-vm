@@ -18,10 +18,10 @@
 %token SPAWN WAIT
 %token EOF
 
-%nonassoc PRINT
 %nonassoc IN
 %nonassoc ARROW
 %left SEMI
+%nonassoc PRINT
 %nonassoc ELSE
 %nonassoc SET
 %left AND

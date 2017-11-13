@@ -20,7 +20,7 @@ let rec closure_of_string =
     begin
     let iter_fun = function
       | IS.MkClos(id, c) -> closure_of_string (Closure(id, c, env)) 
-      | ins -> IS.string_of_is ins in
+      | ins -> sprintf "%s, " (IS.string_of_is ins) in
     (sprintf "(\\%s -> " id) ^
     (List.fold_right (fun x acc -> iter_fun x ^ acc) c "") ^ ")" 
       end
@@ -103,7 +103,7 @@ let step state threads =
         | Int(n1), Int(n2) -> push(Int(n1+n2))
         | Ptr(n1), Ptr(n2) -> raise (VMError "TypeError: Additions between pointers are not allowed")
         | Int(n1), Ptr(n2)
-        | Ptr(n1), Int(n2) -> printf "Warning: Pointer addition with integer\n" ; push(Ptr(n1+n2))
+        | Ptr(n1), Int(n2) -> eprintf "Warning: Pointer addition with integer\n" ; push(Ptr(n1+n2))
         end
 
     | IS.Sub ->
@@ -187,13 +187,14 @@ let step state threads =
         if v==1 then
           state.code <- e2 @ c @ [while_] @ state.code
 
-    | IS.Apply ->
+    | IS.Apply(ref) ->
       let v = pop() in
-      let Closure(id, e, env') = pop() in
+      let Closure(id, e, env') as closure = pop() in
       let new_cl = Closure("apply_closure", state.code, state.env) in
       push new_cl ;
       state.code <- e @ [IS.Return] ;
-      state.env <- Env.add id v env'
+      let nenv = match ref with None -> env' | Some id -> Env.add id closure env' in
+      state.env <- Env.add id v nenv
 
     | IS.Return ->
       let v = pop() in
@@ -204,7 +205,7 @@ let step state threads =
       state.code <- e 
 
     | IS.Print ->
-        let r, v = match pop() with Ptr(_) | Closure(_,_,_) | Unit -> printf "PrintWarning: Tried to print a non integer, skip instruction...\n" ; 1,0 | Int(x) -> 0,x in
+        let r, v = match pop() with Ptr(_) | Closure(_,_,_) | Unit -> eprintf "PrintWarning: Tried to print a non integer, skip instruction...\n" ; 1,0 | Int(x) -> 0,x in
         if r=0 then
           printf "%d\n" v
     | IS.Alloc -> 
@@ -241,9 +242,9 @@ let step state threads =
         let new_thread = {code = e; stack=[]; env=(Env.add id v env'); heap=state.heap} in
         Queue.add new_thread threads
 
-let print_stack = List.iter (print_value)
+let print_stack = List.iter (fun v -> eprintf "%s\n" (string_of_value v))
 
-let execute p print_stackval : unit =
+let execute p print_stackval debug : unit =
   let print_from_stack = function
     | p::_ -> printf "StackPrint: " ; print_value p
     | [] -> () in
@@ -257,7 +258,16 @@ let execute p print_stackval : unit =
     try
       begin
       while true do
-        step worker threads done end 
+        let nowreading = match worker.code with
+          | x::xs -> IS.string_of_is x
+          | [] -> "End of thread" in
+        (if debug then eprintf "Now reading: %s\n\n" nowreading) ; 
+        step worker threads ;
+        if debug then
+        (eprintf "-------BEGIN STACK-----------\n" ;
+        print_stack worker.stack ; 
+        eprintf "\n--------END STACK----------\n\n") 
+      done end 
     with End_of_thread(state) ->
       let _ = Queue.take threads in (*remove thread*)
       if print_stackval then print_from_stack state.stack

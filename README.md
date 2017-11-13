@@ -11,7 +11,7 @@ This program is a OCaml implemented Virtual Machine capable of running simple Co
 
 ## Example .cml
 
-The following CoreML code will compute the n-th Fibonnaci number, the argument n is to be set
+The following CoreML code will compute the n-th Fibonacci number, the argument n is to be set
 in `fibo_arg`
 
     let fibo_arg=10 in
@@ -50,17 +50,20 @@ Others example of code can be found in the folder `tests`
     `a <- !a + 1`
   * Conditionals (if) and loops (while, for). For syntax is `for a=1 upto 10 do expr done`
   * Concurrent programming (the implementation is basic though), with the keyword `spawn fun arg`. We can wait all threads to finish with the keyword `wait`
-  * Anonymous (lambdas) functions: `let a = (fun b -> b + 1)`
+  * Anonymous (lambdas) functions: `let a = (fun b -> b + 1)`. If this function has a name we can refer to this function inside of itself recursively (no need for `let rec` just `let`)
   * Printing integers (with `print`)
 
 ## Command line arguments
 
-    usage: ./VM file.cml
-      --print-program Print compiled program
-      --no-exec Do not execute the compiled program on the VM
-      --print-stack After a thread ends, print its stack's last value
-      -help  Display this list of options
-      --help  Display this list of options
+It may be interesting to separate the normal stdout printing from the stderr printing (warnings and debug are printed in stderr) with redirections,
+
+      usage: ./VM file.cml
+    --print-program Print compiled program
+    --no-exec Do not execute the compiled program on the VM
+    --print-stack After a thread ends, print its stack's last value
+    --debug Verbose VM mode, print each reduction step with its stack state
+    -help  Display this list of options
+    --help  Display this list of options
 
 
 

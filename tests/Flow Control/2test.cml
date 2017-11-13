@@ -1,1 +1,1 @@
-let a = ref 0 in while !a <= 10 do a <- !a + 1 done ; !a
+let a = ref 0 in while !a <= 10 do a <- !a + 1 done ; print (!a)

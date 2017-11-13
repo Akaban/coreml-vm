@@ -1,12 +1,14 @@
 let printp = ref false
 let noexec = ref false
 let printstack = ref false
+let debug = ref false
 
 let usage = "usage: ./VM file.cml"
 let spec  = 
   [ "--print-program", Arg.Set printp, "Print compiled program" ;
     "--no-exec", Arg.Set noexec, "Do not execute the compiled program on the VM";
-    "--print-stack", Arg.Set printstack, "After a thread ends, print its stack's last value"]
+    "--print-stack", Arg.Set printstack, "After a thread ends, print its stack's last value";
+    "--debug", Arg.Set debug, "Verbose VM mode, print each reduction step with its stack state"]
 
 let file =
   let file = ref None in
@@ -30,7 +32,7 @@ let () =
   (if (not !noexec) then
     begin
     try
-    VM.execute p !printstack 
+    VM.execute p !printstack !debug
     with
       | Match_failure (_,_,_) -> raise (VM.VMError "SemanticError: The Virtual Machine encoutered a MatchError because of a semantic error") end) ;
   exit 0

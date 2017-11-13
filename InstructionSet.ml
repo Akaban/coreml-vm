@@ -1,6 +1,6 @@
 type instruction =
   | Int of int | Lookup of string | Add | Mult | Div | Sub | And | Or
-  | MkClos of string * block | Let of string | EndLet of string | Return | Apply
+  | MkClos of string * block | Let of string | EndLet of string | Return | Apply of string option
   | Alloc | Unit | Drop | Spawn | Wait | Load | Store | Dup
   | While of block * block | If of block * block | Eq | Geq | Leq | Gt | Lt
   | Print
@@ -36,7 +36,7 @@ let rec string_of_is =
         Printf.sprintf "While {%s} do {%s}" (string_of_block cond) (string_of_block b)
     | If(e1, e2) ->
         Printf.sprintf "If true then {%s} else {%s}" (string_of_block e1) (string_of_block e2)
-    | Apply -> "Apply"
+    | Apply(_) -> "Apply"
     | Return -> "Return"
     | Alloc -> "Alloc" 
     | Load -> "Load"

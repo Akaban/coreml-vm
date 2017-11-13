@@ -31,9 +31,11 @@ let rec compile_expr = function
     (*@ [EndLet(id)]*)
 
   | Ast.Apply(e1, e2) ->
+    let fun_expr = compile_expr e1 in
+    let fun_ref = match fun_expr with [Lookup(id)] -> Some id | _ -> None in
     (compile_expr e1) @
     (compile_expr e2) @
-    [Apply]
+    [Apply(fun_ref)]
 
   | Ast.Fun(id, e) ->
     let func = compile_expr e in

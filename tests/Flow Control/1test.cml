@@ -1,2 +1,2 @@
-let p = (fun b -> let a = ref b in let c = ref 0 in  while !a > 0 do a <- !a-1 ; c <- !c+1 done ; 5 ) in p 50
+let p = (fun b -> let a = ref b in let c = ref 0 in  while !a > 0 do a <- !a-1 ; c <- !c+1 done ; !c ) in print (p 50)
 

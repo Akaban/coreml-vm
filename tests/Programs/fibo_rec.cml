@@ -1,0 +1,1 @@
+let fibo_rec = (fun a -> if a <= 1 then a else fibo_rec (a-1) + fibo_rec (a-2)) in print (fibo_rec 8)
