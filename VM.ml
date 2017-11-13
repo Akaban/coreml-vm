@@ -61,6 +61,12 @@ type thread_state = {
 exception End_of_thread of thread_state
 exception Wait_of_thread  
 
+(* step :: thread_state -> queue -> unit
+ * execute one step of reduction of the virtual machine
+ * raise End_of_thread if there's no more code to run
+ * raise Wait_of_thread to make the current thread wait for all the others
+ * raise VMError if the virtual machine encounter an uncatchable error*)
+
 let step state threads =
   let int_of_bool = function
     | true -> 1
@@ -177,7 +183,7 @@ let step state threads =
         push(cl)
     | IS.If(e1, e2) ->
         let Int v = pop() in
-        if v==1 then
+        if v==1 then (*conditional branching*)
           state.code <- e1 @ state.code
         else 
           state.code <- e2 @ state.code
@@ -185,7 +191,7 @@ let step state threads =
     | IS.While(c, e2) as while_ ->
         let Int v = pop() in
         if v==1 then
-          state.code <- e2 @ c @ [while_] @ state.code
+          state.code <- e2 @ c @ [while_] @ state.code (*if the loop condition is satisfied we move forward with the execution of the loop*)
 
     | IS.Apply(ref) ->
       let v = pop() in
@@ -193,21 +199,22 @@ let step state threads =
       let new_cl = Closure("apply_closure", state.code, state.env) in
       push new_cl ;
       state.code <- e @ [IS.Return] ;
-      let nenv = match ref with None -> env' | Some id -> Env.add id closure env' in
-      state.env <- Env.add id v nenv
+      let nenv = match ref with None -> env' | Some id -> Env.add id closure env' in (*if we can refer to this closure with a variable then add it to the env*)
+      state.env <- Env.add id v nenv                                                 (*this allows recursive calls*)
 
     | IS.Return ->
       let v = pop() in
-      let c = begin match pop() with Unit -> pop() | x -> x end in
-      let Closure(id, e, env') = c in
-      push(v);
+      let c = begin match pop() with Unit -> pop() | x -> x end in (*Important note: an Unit can hide the closure, if we encounter an Unit value*)
+      let Closure(id, e, env') = c in                              (*then we take a value out of the stack again*)
+      push(v);                                                     (*there can be only one useless unit because of the IS.Unit match section below*)
       state.env <- env';
       state.code <- e 
 
     | IS.Print ->
-        let r, v = match pop() with Ptr(_) | Closure(_,_,_) | Unit -> eprintf "PrintWarning: Tried to print a non integer, skip instruction...\n" ; 1,0 | Int(x) -> 0,x in
-        if r=0 then
-          printf "%d\n" v
+        begin
+        match pop() with Ptr(_) | Closure(_,_,_) | Unit -> eprintf "PrintWarning: Tried to print a non integer, skip instruction...\n"  
+                 | Int(x) -> printf "%d\n" x
+        end
     | IS.Alloc -> 
         let heap_ptr = state.heap.address in
         push(Ptr(heap_ptr)) ;
@@ -221,21 +228,21 @@ let step state threads =
         let ptr = match pop() with
           | Ptr(x) -> x
           | x -> raise (VMError (sprintf "TypeError: %s is not a pointer)" (string_of_value x))) in
-	  begin
+	    begin
         try
 	      let v = Hashtbl.find state.heap.mem ptr in
           push(v)
 	      with Not_found -> raise (VMError (sprintf "PointerError: No such pointer (%d) in heap" ptr)) end 
     | IS.Unit ->
         begin match state.stack with
-               | Unit :: s -> ()
+               | Unit :: s -> () (*don't push an Unit over an Unit*)
                | _ -> push Unit
                end
     | IS.Dup ->
         let v = pop() in
         push(v) ; push(v)
     | IS.Drop -> let _ = pop() in ()
-    | IS.Wait -> let thread = Queue.take threads in Queue.add thread threads ; raise Wait_of_thread
+    | IS.Wait -> let thread = Queue.take threads in Queue.add thread threads (*place thread last in the queue*) ; raise Wait_of_thread
     | IS.Spawn ->
         let v = pop() in 
         let Closure(id, e, env') = pop() in
