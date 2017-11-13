@@ -1,8 +1,8 @@
 open InstructionSet
 
 (* compile_expr :: Ast.t -> IS list
- * Compile le programme encodé dans l'arbre AST vers les instructions de la VM
- * Renvoie le programme ainsi compilé sous forme de liste d'instructions*) 
+ * Compile the AST tree encoded program towards the VM instructions
+ * Return the compiled program as an instruction list*)
 
 let rec compile_expr = function
   | Ast.Int(n) ->

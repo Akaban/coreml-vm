@@ -65,7 +65,7 @@ exception Wait_of_thread
  * execute one step of reduction of the virtual machine
  * raise End_of_thread if there's no more code to run
  * raise Wait_of_thread to make the current thread wait for all the others
- * raise VMError if the virtual machine encounter an uncatchable error*)
+ * raise VMError if the virtual machine encounters an uncatchable error*)
 
 let step state threads =
   let int_of_bool = function
@@ -190,8 +190,8 @@ let step state threads =
 
     | IS.While(c, e2) as while_ ->
         let Int v = pop() in
-        if v==1 then
-          state.code <- e2 @ c @ [while_] @ state.code (*if the loop condition is satisfied we move forward with the execution of the loop*)
+        if v==1 then (*if the loop condition is satisfied we move forward with the execution of the loop*)
+          state.code <- e2 @ c @ [while_] @ state.code 
 
     | IS.Apply(ref) ->
       let v = pop() in
@@ -199,15 +199,16 @@ let step state threads =
       let new_cl = Closure("apply_closure", state.code, state.env) in
       push new_cl ;
       state.code <- e @ [IS.Return] ;
-      let nenv = match ref with None -> env' | Some id -> Env.add id closure env' in (*if we can refer to this closure with a variable then add it to the env*)
-      state.env <- Env.add id v nenv                                                 (*this allows recursive calls*)
-
+      let nenv = match ref with None -> env' | Some id -> Env.add id closure env' in (*if we can refer to this closure*)
+      state.env <- Env.add id v nenv                                                (*with a variable then add it to the env*)
+                                                                                     (*this allows recursive calls*)
+ 
     | IS.Return ->
-      let v = pop() in
-      let c = begin match pop() with Unit -> pop() | x -> x end in (*Important note: an Unit can hide the closure, if we encounter an Unit value*)
-      let Closure(id, e, env') = c in                              (*then we take a value out of the stack again*)
-      push(v);                                                     (*there can be only one useless unit because of the IS.Unit match section below*)
-      state.env <- env';
+      let v = pop() in  
+      let c = begin match pop() with Unit -> pop() | x -> x end in 
+      let Closure(id, e, env') = c in                  (*Important note: an Unit can hide the closure, if we encounter an Unit value*)
+      push(v);                                         (*then we take a value out of the stack again*)
+      state.env <- env';                               (*there can be only one useless unit because of the IS.Unit match section below*)
       state.code <- e 
 
     | IS.Print ->
