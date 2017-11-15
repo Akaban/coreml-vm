@@ -3,6 +3,10 @@ module IS = InstructionSet
 
 let heap_size = 20
 
+let thread_count =
+  let count = ref 0 in
+  fun () -> count := !count + 1 ; !count;;
+
 exception VMError of string
 exception EmptyStack
 
@@ -55,7 +59,9 @@ type thread_state = {
   mutable code  : IS.block;
   mutable stack : value list;
   mutable env   : env ;
-  mutable heap  : heap
+  mutable heap  : heap;
+  mutable step_count : int;
+  thread_number : int
 }
 
 exception End_of_thread of thread_state
@@ -89,6 +95,7 @@ let step state threads =
 	state.stack <- s;
 	v
   in
+  state.step_count <- state.step_count + 1 ;
   match fetch() with
     | IS.Int(n) ->
       push (Int n)
@@ -247,7 +254,7 @@ let step state threads =
     | IS.Spawn ->
         let v = pop() in 
         let Closure(id, e, env') = pop() in
-        let new_thread = {code = e; stack=[]; env=(Env.add id v env'); heap=state.heap} in
+        let new_thread = {code = e; stack=[]; env=(Env.add id v env'); heap=state.heap; step_count=0; thread_number = thread_count()} in
         Queue.add new_thread threads
 
 let print_stack = List.iter (fun v -> eprintf "%s\n" (string_of_value v))
@@ -258,7 +265,7 @@ let execute p print_stackval debug : unit =
     | [] -> () in
   let new_heap () = {address=0; mem=Hashtbl.create heap_size} in
   let threads = Queue.create () in
-  let fst_thread = {code=p ; env=Env.empty ; stack=[] ; heap=new_heap()} in
+  let fst_thread = {code=p ; env=Env.empty ; stack=[] ; heap=new_heap(); step_count=0; thread_number = thread_count()} in
   Queue.add fst_thread threads ;
   while not (Queue.is_empty threads) do 
     let worker = Queue.peek threads in
@@ -278,6 +285,7 @@ let execute p print_stackval debug : unit =
       done end 
     with End_of_thread(state) ->
       let _ = Queue.take threads in (*remove thread*)
-      if print_stackval then print_from_stack state.stack
+      if print_stackval then print_from_stack state.stack ;
+      if debug then eprintf "[DEBUG] Thread number %d finished with %d steps\n" state.thread_number state.step_count
         | Wait_of_thread -> () 
     end ; done ;;
