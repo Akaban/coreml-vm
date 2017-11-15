@@ -81,7 +81,8 @@ let rec compile_expr = function
      [ Store ;
      Let(id) ] @
      condWhile @
-     [While(condWhile,e1')])
+     [While(condWhile,e1')]) @
+     [Drop(id)]
 
   | Ast.Print(e) ->
       (compile_expr e) @
