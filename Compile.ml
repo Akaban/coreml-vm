@@ -1,5 +1,25 @@
 open InstructionSet
 
+let _ = Random.self_init()
+
+let rand_char() =
+  let rand_n = 65 + (Random.int 26) in
+  Char.chr rand_n
+
+let repeat =
+  let rec doRepeat f = function
+    | x when x <= 0 -> ()
+    | x -> f() ; doRepeat f (x-1) in
+  doRepeat
+
+let rand_string n =
+  let res = ref "" in
+  if n <= 0 then "" else begin
+  repeat (fun () -> res := !res ^ (Char.escaped (rand_char()))) n ; !res end
+
+
+
+
 (* compile_expr :: Ast.t -> IS list
  * Compile the AST tree encoded program towards the VM instructions
  * Return the compiled program as an instruction list*)
@@ -71,15 +91,17 @@ let rec compile_expr = function
       c' @ 
       [While(c',b)]
   | Ast.For(id, begfor, endfor, e1) ->
+     let ptr_id = Printf.sprintf "%s_%s" (id) (rand_string 8) in
      let endfor', begfor' = compile_expr endfor, compile_expr begfor in
-     let condWhile = endfor' @ [Lookup(id); Load; Leq] in
-     let e1' = (compile_expr e1) @ [Lookup(id); Lookup(id); Load; Int(1); Add; Store; Unit] (*variable incrementation code*) in
+     let condWhile = endfor' @ [Lookup(ptr_id); Load; Leq] in
+     let e1' = [Lookup(ptr_id);Load;Let(id)] @
+       (compile_expr e1) @ [Lookup(ptr_id); Lookup(ptr_id); Load; Int(1); Add; Store; Unit; EndLet(id)] (*variable incrementation code*) in
      (*syntaxic sugar, we compile this using a while instruction*)
      Alloc ::
      Dup ::
      (begfor' @ 
      [ Store ;
-     Let(id) ] @
+     Let(ptr_id) ] @
      condWhile @
      [While(condWhile,e1')])
   | Ast.Print(e) ->
