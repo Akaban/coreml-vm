@@ -19,6 +19,7 @@
   "wait", WAIT;
   "for", FOR;
   "upto", UPTO;
+  "downto", DOWNTO;
   "print", PRINT
       ] ;
     fun s ->

@@ -7,7 +7,9 @@ type expr =
   | Apply of expr * expr
   | Cond  of expr * expr * expr
   | Loop  of expr * expr
-  | For   of ident * expr * expr * expr
+  | ForU   of ident * expr * expr * expr
+  | ForD   of ident * expr * expr * expr
+  | For   of ident * expr * expr * expr * bool
   | Seq   of expr * expr
   | Ref   of expr
   | GetR  of expr

@@ -90,12 +90,14 @@ let rec compile_expr = function
       let c' = compile_expr c in
       c' @ 
       [While(c',b)]
-  | Ast.For(id, begfor, endfor, e1) ->
+
+  | Ast.For(id, begfor, endfor, e1, direction) -> (* direction = True -> UPTO *)
+     let comp_op, loop_op = if direction then Leq, Add else Geq, Sub in (* direction = False -> DOWNTO *)
      let ptr_id = Printf.sprintf "%s_%s" (id) (rand_string 8) in
      let endfor', begfor' = compile_expr endfor, compile_expr begfor in
-     let condWhile = endfor' @ [Lookup(ptr_id); Load; Leq] in
+     let condWhile = endfor' @ [Lookup(ptr_id); Load; comp_op] in
      let e1' = [Lookup(ptr_id);Load;Let(id)] @
-       (compile_expr e1) @ [Lookup(ptr_id); Lookup(ptr_id); Load; Int(1); Add; Store; Unit; EndLet(id)] (*variable incrementation code*) in
+       (compile_expr e1) @ [Lookup(ptr_id); Int(1); Lookup(ptr_id); Load; loop_op; Store; Unit; EndLet(id)] (*variable incrementation code*) in
      (*syntaxic sugar, we compile this using a while instruction*)
      Alloc ::
      Dup ::
@@ -104,7 +106,8 @@ let rec compile_expr = function
      Let(ptr_id) ] @
      condWhile @
      [While(condWhile,e1')])
-  | Ast.Print(e) ->
+
+    | Ast.Print(e) ->
       (compile_expr e) @
       [Print]
 

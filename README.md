@@ -48,7 +48,8 @@ Others example of code can be found in the folder `tests`. We can run some of th
   * References (pointers) with the keyword `ref` ie. `let a = ref 10`.
     We can then refer to a reference with a bang like this `!a` or set the value of a reference with the following syntax
     `a <- !a + 1`
-  * Conditionals (if) and loops (while, for). For syntax is `for a=1 upto 10 do expr done`
+  * Conditionals (if) and loops (while, for).
+  * Increasing for loop syntax is `for a=1 upto 10 do expr done`. We can use a decreasing loop with `downto` instead of `upto`
   * Concurrent programming (the implementation is basic though), with the keyword `spawn fun arg`. We can wait all threads to finish with the keyword `wait`
   * Anonymous (lambdas) functions: `let a = (fun b -> b + 1)`. If this function has a name we can refer to this function inside of itself recursively (no need for `let rec` just `let`)
   * Printing integers (with `print`)

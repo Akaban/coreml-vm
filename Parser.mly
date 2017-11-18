@@ -12,7 +12,7 @@
 %token FUN ARROW
 %token IF THEN ELSE
 %token PRINT
-%token WHILE DO DONE FOR UPTO
+%token WHILE DO DONE FOR UPTO DOWNTO
 %token SEMI
 %token REF BANG SET
 %token SPAWN WAIT
@@ -48,7 +48,8 @@ expr:
 | FUN id=IDENT ARROW e=expr            { Fun(id, e)        }
 | e1=expr e2=simple_expr               { Apply(e1, e2)     }
 | IF c=expr THEN e1=expr ELSE e2=expr  { Cond(c, e1, e2)   }
-| FOR id=IDENT EQ start=simple_expr UPTO endfor=simple_expr DO e1=expr DONE  { For(id, start, endfor, e1) }
+| FOR id=IDENT EQ start=simple_expr UPTO endfor=simple_expr DO e1=expr DONE  { For(id, start, endfor, e1, true) }
+| FOR id=IDENT EQ start=simple_expr DOWNTO endfor=simple_expr DO e1=expr DONE  { For(id, start, endfor, e1, false) }
 | WHILE c=expr DO e=expr DONE          { Loop(c, e)        }
 | e1=expr SEMI e2=expr                 { Seq(e1, e2)       }
 | REF e=simple_expr                    { Ref(e)            }
