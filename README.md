@@ -6,6 +6,7 @@ This program is a OCaml implemented Virtual Machine capable of running simple Co
 
   * A recent version of OCaml is required
   * `ocaml-findlib`, `ocamldep` and `ocamlbuild` are required
+  * `ocamllex` and `ocaml-menhir` are required
   * If all requirements of the above are meet, compile the project with `make`
   * The result binary will be named `VM`
 
